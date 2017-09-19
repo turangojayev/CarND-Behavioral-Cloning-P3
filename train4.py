@@ -69,8 +69,9 @@ def upsample(X, y, bins):
     return X, y, digitized
 
 
-def translate(image, angle, max_horizontal_shift, correction=0.03):
+def translate(image, angle, max_horizontal_shift, correction=0.04):
     horizontal_shift = max_horizontal_shift * uniform(-1, 1)
+    correction = numpy.abs(horizontal_shift / 100)
     new_angle = angle + correction * horizontal_shift / max_horizontal_shift
     vertical_shift = 20 * uniform(-1, 1)
     translation_matrix = numpy.float32([[1, 0, horizontal_shift], [0, 1, vertical_shift]])
@@ -108,7 +109,8 @@ def generate_from(filenames, steering, batch_size=32):
                                               steering[offset:offset + half_batch_size]
 
             images = [cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB) for path in batch_filenames]
-            image2angle = [translate(img, angle, uniform(10, 60)) for img, angle in zip(images, batch_steering)]
+            # image2angle = [translate(img, angle, uniform(20, 60)) for img, angle in zip(images, batch_steering)]
+            image2angle = [translate(img, angle, 30) for img, angle in zip(images, batch_steering)]
             images = list(map(itemgetter(0), image2angle))
             batch_steering = numpy.array(list(map(itemgetter(1), image2angle)))
             images = [shadow(image) if if_yes() else image for image in images]
@@ -123,7 +125,7 @@ def generate_from(filenames, steering, batch_size=32):
 
 pattern = '{}/driving_log.csv'
 
-directories = ['track2', 'track3', 'track4', 'track5']
+directories = ['track2', 'track3', 'track4', 'track5', 'backup3']
 csv_files_images = [(pattern.format(image_folder), image_folder) for image_folder in directories]
 
 X, y = combine_datasets(*csv_files_images)
@@ -171,7 +173,7 @@ model = Model(inputs, output)
 model.compile(optimizer=optimizers.adam(), loss=losses.mse)
 model.summary()
 
-checkpoint = ModelCheckpoint('model5', monitor='val_loss', verbose=0, save_best_only=True, mode='auto', period=1)
+checkpoint = ModelCheckpoint('model7', monitor='val_loss', verbose=0, save_best_only=True, mode='auto', period=1)
 model.fit_generator(train_generator,
                     steps_per_epoch=X_train.shape[0] / batch_size,
                     epochs=5,
