@@ -173,7 +173,7 @@ model = Model(inputs, output)
 model.compile(optimizer=optimizers.adam(), loss=losses.mse)
 model.summary()
 
-checkpoint = ModelCheckpoint('model9', monitor='val_loss', verbose=0, save_best_only=True, mode='auto', period=1)
+checkpoint = ModelCheckpoint('model10', monitor='val_loss', verbose=0, save_best_only=True, mode='auto', period=1)
 model.fit_generator(train_generator,
                     steps_per_epoch=X_train.shape[0] / batch_size,
                     epochs=5,
