@@ -9,16 +9,12 @@ from keras import optimizers, losses
 from keras.callbacks import ModelCheckpoint
 from keras.engine import Model
 from keras.layers import Input, Lambda, activations, Conv2D, MaxPooling2D, Dropout, Dense, Flatten
-from keras.layers.convolutional import Cropping2D
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-batch_size = 32
-columns = ['center', 'left', 'right', 'steering', 'throttle', 'brake', 'speed']
-uniform = numpy.random.uniform
-
 
 def combine_datasets(*csv_files):
+    columns = ['center', 'left', 'right', 'steering', 'throttle', 'brake', 'speed']
     df = pandas.read_csv(csv_files[0][0], header=None, names=columns)
     df.center = df.center.apply(lambda x: os.path.join(csv_files[0][1], x))
     df.left = df.left.apply(lambda x: os.path.join(csv_files[0][1], x))
@@ -48,13 +44,10 @@ def upsample(X, y, bins):
     sharp_y = y[indices_of_sharp_angles]
     digitized = numpy.digitize(sharp_y, bins)
     classes, counts = numpy.unique(digitized, return_counts=True)
-    print(classes, counts)
     probabilities = counts / counts.sum()
-    print(probabilities)
     inverse = numpy.power(probabilities, -0.5)
     exponents = numpy.exp(inverse)
     new_probabilities = exponents / exponents.sum()
-    print(new_probabilities)
     per_instance = new_probabilities / counts
 
     sample_probabilities = numpy.zeros(shape=len(sharp_y))
@@ -96,7 +89,7 @@ def shadow(image):
     return cv2.cvtColor(hlsed, cv2.COLOR_HLS2RGB)
 
 
-def if_yes():
+def yes():
     return uniform() > 0.5
 
 
@@ -109,74 +102,77 @@ def generate_from(filenames, steering, batch_size=32):
                                               steering[offset:offset + half_batch_size]
 
             images = [cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB) for path in batch_filenames]
-            # image2angle = [translate(img, angle, uniform(20, 60)) for img, angle in zip(images, batch_steering)]
             image2angle = [translate(img, angle, 40) for img, angle in zip(images, batch_steering)]
             images = list(map(itemgetter(0), image2angle))
             batch_steering = numpy.array(list(map(itemgetter(1), image2angle)))
-            images = [shadow(image) if if_yes() else image for image in images]
+            images = [shadow(image) if yes() else image for image in images]
             images = numpy.vstack((images, numpy.array(list(map(partial(cv2.flip, flipCode=1), images)))))
             batch_steering = numpy.hstack((batch_steering, -batch_steering))
-
-            # images = numpy.array(list(map(
-            #     partial(cv2.resize, dsize=(int(images[0].shape[1] / 2), int(images[0].shape[0] / 2))), images)))
-
             yield shuffle(images, batch_steering)
 
 
-pattern = '{}/driving_log.csv'
+def build_model(shape):
+    inputs = Input(shape=shape)
+    output = Lambda(lambda x: (x - 127) / 128)(inputs)
 
-directories = ['track2', 'track3', 'track4', 'track5', 'backup3', 'track8']
-csv_files_images = [(pattern.format(image_folder), image_folder) for image_folder in directories]
+    output = Conv2D(32, (5, 5), activation=activations.relu, padding='same')(output)
+    output = MaxPooling2D((2, 2))(output)
 
-X, y = combine_datasets(*csv_files_images)
+    output = Conv2D(48, (5, 5), activation=activations.relu, padding='same')(output)
+    output = MaxPooling2D((2, 2))(output)
 
-angle_grid = [-1, -0.8, -0.6, -0.3, 0.3, 0.6, 0.8, 1]
-bins = numpy.array(angle_grid)
-digitized = numpy.digitize(y, bins)
-# X, y, digitized = upsample(X, y, bins)
-print(X.shape, y.shape)
+    output = Conv2D(64, (5, 5), activation=activations.relu)(output)
+    output = MaxPooling2D((2, 2))(output)
 
-X_train, X_valid, y_train, y_valid = train_test_split(X, y, stratify=digitized, train_size=0.8)
+    output = Conv2D(64, (5, 5), activation=activations.relu)(output)
+    output = MaxPooling2D((2, 2))(output)
 
-train_generator = generate_from(X_train, y_train, batch_size)
-valid_generator = generate_from(X_valid, y_valid, batch_size)
+    output = Conv2D(64, (5, 5), activation=activations.relu)(output)
+    output = MaxPooling2D((2, 2))(output)
 
-# inputs = Input(shape=(80, 160, 3))
-inputs = Input(shape=(160, 320, 3))
-output = Lambda(lambda x: (x - 127) / 128)(inputs)
-cropped = Cropping2D(cropping=((20, 20), (0, 0)))(output)
-# output = Conv2D(3, (1, 1), padding='same')(output)
+    flattened = Flatten()(output)
+    dense1 = Dense(100, activation=activations.relu)(flattened)
+    dense2 = Dense(100, activation=activations.relu)(dense1)
+    dense2 = Dropout(0.8)(dense2)
+    output = Dense(1)(dense2)
+    model = Model(inputs, output)
+    return model
 
-output = Conv2D(32, (5, 5), activation=activations.relu, padding='same')(output)
-output = MaxPooling2D((2, 2))(output)
 
-output = Conv2D(48, (5, 5), activation=activations.relu, padding='same')(output)
-output = MaxPooling2D((2, 2))(output)
-print(output.shape)
+if __name__ == "__main__":
+    batch_size = 32
+    uniform = numpy.random.uniform
 
-output = Conv2D(64, (5, 5), activation=activations.relu)(output)
-output = MaxPooling2D((2, 2))(output)
+    pattern = '{}/driving_log.csv'
+    directories = ['track2', 'track3', 'track4', 'track5', 'data', 'track8']
 
-output = Conv2D(64, (5, 5), activation=activations.relu)(output)
-output = MaxPooling2D((2, 2))(output)
+    csv_files_images = [(pattern.format(image_folder), image_folder) for image_folder in directories]
 
-output = Conv2D(64, (5, 5), activation=activations.relu)(output)
-output = MaxPooling2D((2, 2))(output)
+    X, y = combine_datasets(*csv_files_images)
 
-flattened = Flatten()(output)
-dense1 = Dense(100, activation=activations.relu)(flattened)
-dense2 = Dense(100, activation=activations.relu)(dense1)
-dense2 = Dropout(0.8)(dense2)
-output = Dense(1)(dense2)
-model = Model(inputs, output)
+    angle_grid = [-1, -0.8, -0.6, -0.3, 0.3, 0.6, 0.8, 1]
+    bins = numpy.array(angle_grid)
+    digitized = numpy.digitize(y, bins)
+    # X, y, digitized = upsample(X, y, bins)
+    print(X.shape, y.shape)
 
-model.compile(optimizer=optimizers.adam(0.0001), loss=losses.mse)
-model.summary()
+    X_train, X_valid, y_train, y_valid = train_test_split(X, y, stratify=digitized, train_size=0.8)
 
-checkpoint = ModelCheckpoint('model10', monitor='val_loss', verbose=0, save_best_only=True, mode='auto', period=1)
-model.fit_generator(train_generator,
-                    steps_per_epoch=2 * X_train.shape[0] / batch_size,
-                    epochs=8,
-                    callbacks=[checkpoint],
-                    validation_data=valid_generator,
-                    validation_steps=2 * X_valid.shape[0] / batch_size)
+    print(X_train.shape)
+    print(X_valid.shape)
+
+    train_generator = generate_from(X_train, y_train, batch_size)
+    valid_generator = generate_from(X_valid, y_valid, batch_size)
+
+    model = build_model(shape=(160, 320, 3))
+
+    model.compile(optimizer=optimizers.adam(0.0001), loss=losses.mse)
+    model.summary()
+
+    checkpoint = ModelCheckpoint('model.h5', monitor='val_loss', verbose=0, save_best_only=True, mode='auto', period=1)
+    model.fit_generator(train_generator,
+                        steps_per_epoch=2 * X_train.shape[0] / batch_size,
+                        epochs=4,
+                        callbacks=[checkpoint],
+                        validation_data=valid_generator,
+                        validation_steps=2 * X_valid.shape[0] / batch_size)
