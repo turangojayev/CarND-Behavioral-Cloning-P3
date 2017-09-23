@@ -1,7 +1,3 @@
-#**Behavioral Cloning** 
-
-[//]: # (Image References)
-
 [image1]: ./examples/center.png 
 [image2]: ./examples/left.png 
 [image3]: ./examples/right.png 
@@ -12,7 +8,7 @@
 
 
 **Behavioral Cloning Project**
-
+----------------------------------------
 
 The goals / steps of this project are the following:
 * Use the simulator to collect data of good driving behavior
@@ -40,12 +36,13 @@ it has different levels of height and only in few parts the surface is flat. Mos
  ![image4]
 
 To gather the data, first, I have driven the car on both tracks, both clockwise and counter-clockwise. I also use the images
- from left and right cameras with a correction of 0.2 and -0.2 respectively. Then I add random horizontal and vertical translations
+ from left and right cameras with a correction of 0.2 and -0.2 respectively. I tried to make more of the images at sharp turns,
+  thus have driven the car to certain difficult parts on second track and recorded starting from those points, while keeping the speed quite low.Then I add random horizontal and vertical translations
  to the images. Vertically, images are shifted by pixels between -20 and 20. Horizontally, they are shifted by pixels from
    interval of [-40, 40]. Since the steering angle should be corrected for the horizontal shifts I use the formula
    
 ```
-    angle + correction * horizontal_shift / max_horizontal_shift
+angle + correction * horizontal_shift / max_horizontal_shift
 ```
 
 where
@@ -63,30 +60,40 @@ Here are some examples of the images after the random shifts:
 ![image5]
 
 Second track contains several regions with shadow. To make the model learn how to behave in shady regions, we need more 
-of these kind of samples. To artificially increase the portion of shady images, I convert randomly picked images to HLS (hue, lightness, saturation) 
-color space, select a random area in the image and reduce value of lightness. The coefficient for reducing lightness is 
-also sampled uniformly from interval [0.4. 0.6]. 
+of these kind of samples. To artificially increase the portion of shady images, I convert randomly (uniformly, with probability of 0.5)
+picked images to HLS (hue, lightness, saturation) color space, select a random area in the image and reduce the value of lightness. The coefficient for reducing lightness is 
+also sampled uniformly from interval [0.4. 0.6]. For example, shadow added to random areas of the images above would look like this:
 
 ![image6]
 
-To increase the data and to remove the bias towards certain side for the tracks I also flip the images and of course, 
-multiply the corresponding steering angle by -1. 
+To increase the data further and to remove the bias towards certain side for the tracks I also flip the images horizontally and of course, 
+multiply the corresponding steering angle by -1. After all this procedures I would have ended up with 206418 images. I keep 
+only the paths to the images and use python generators to read the images only when they are needed. 
+Random shifts-shadows are done on the fly. Thus, the actual number of distinct images is more than 206418 
+(translation and shadowing are done randomly every time the image is read).
 
 ###Model Architecture and Training Strategy
+
+Inspired by [NVIDIA's end to end approach](https://arxiv.org/pdf/1604.07316.pdf) I used similar architecture to solve this problem.
+First I normalize the images by subtracting 127 and dividing by 128, however, I neither cropped any part of the image, nor
+resized them. The difference from the NVIDIA's architecture is in the stride sizes (I have 1x1 strides), usage of max pooling
+after convolutional layers, number of filters at each convolutional layer, kernel sizes of the last two convolutional layers 
+(5x5 instead of 3x3) and in the number and sizes of the fully connected layers (2 instead of 3 layers, each of size 100).
+ In total, my model had 371,373 parameters. The number of parameters are listed in the table below:
 
 |Layer (type) |Output Shape|Param #|
 --------------|:-----------:|------ |
 |input_1 (InputLayer)| (None, 160, 320, 3)|0|
 lambda_1 (Lambda)            |(None, 160, 320, 3)       |0|         
-conv2d_1 (Conv2D)            |(None, 160, 320, 32)     | 2432  |    
+conv2d_1 (Conv2D), kernel_size=5x5 |(None, 160, 320, 32)     | 2432  |    
 max_pooling2d_1 (MaxPooling2) |(None, 80, 160, 32)      | 0     |    
-conv2d_2 (Conv2D)            |(None, 80, 160, 48)      | 38448 |    
+conv2d_2 (Conv2D) ,kernel_size=5x5|(None, 80, 160, 48)      | 38448 |    
 max_pooling2d_2 (MaxPooling2)|(None, 40, 80, 48)       | 0     |    
-conv2d_3 (Conv2D)            |(None, 36, 76, 64)       | 76864 |    
+conv2d_3 (Conv2D), kernel_size=5x5|(None, 36, 76, 64)       | 76864 |    
 max_pooling2d_3 (MaxPooling2) |(None, 18, 38, 64)       | 0     |    
-conv2d_4 (Conv2D)            |(None, 14, 34, 64)       | 102464|    
+conv2d_4 (Conv2D), kernel_size=5x5|(None, 14, 34, 64)       | 102464|    
 max_pooling2d_4 (MaxPooling2) |(None, 7, 17, 64)        | 0     |    
-conv2d_5 (Conv2D)            |(None, 3, 13, 64)        | 102464|    
+conv2d_5 (Conv2D), kernel_size=5x5|(None, 3, 13, 64)        | 102464|    
 max_pooling2d_5 (MaxPooling2) |(None, 1, 6, 64)         | 0     |    
 flatten_1 (Flatten)          |(None, 384)              | 0     |    
 dense_1 (Dense)              |(None, 100)              | 38500 |    
@@ -94,77 +101,14 @@ dense_2 (Dense)              |(None, 100)              | 10100 |
 dropout_1 (Dropout)          |(None, 100)              | 0     |    
 dense_3 (Dense)              |(None, 1)                | 101   |    
 
- 371,373 parameters
+ I use rectified linear unit as activation function and it performed better than 
+ exponential linear unit in my experiments. I trained my model for 4 epochs with adaptive momentum (adam) optimizer and batch size of 32. Initial learning rate of 0.001 ended up with making huge jumps
+for the loss and setting it to 0.0001 has given me the best results.
 
-[![asdasd](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
+To track the value of loss function during training, I split the data into train (80%) and validation (20%) parts.
+To make sure that both train and validation data contain images with corresponding steering angle from the whole interval, 
+I use stratified sampling. For that, I group the steering angle values by putting them into separate bins, given by values
+[-1, -0.8, -0.6, -0.3, 0.3, 0.6, 0.8, 1]. After all these steps my model learned how to drive the car on both tracks at the
+speed of 30 mph.
 
-
-####2. Attempts to reduce overfitting in the model
-
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
-
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
-
-####3. Model parameter tuning
-
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
-
-####4. Appropriate training data
-
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
-
-For details about how I created the training data, see the next section. 
-
-###Model Architecture and Training Strategy
-
-####1. Solution Design Approach
-
-The overall strategy for deriving a model architecture was to ...
-
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
-
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
-
-To combat the overfitting, I modified the model so that ...
-
-Then I ... 
-
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
-
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
-
-####2. Final Model Architecture
-
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
-
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
-![alt text][image1]
-
-####3. Creation of the Training Set & Training Process
-
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
-
-![alt text][image2]
-
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
-
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
-
-Then I repeated this process on track two in order to get more data points.
-
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
-
-![alt text][image6]
-![alt text][image7]
-
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
-
-
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+[![](https://www.youtube.com/embed/d4q78V76Xlo/0.jpg)](https://www.youtube.com/embed/d4q78V76Xlo)
