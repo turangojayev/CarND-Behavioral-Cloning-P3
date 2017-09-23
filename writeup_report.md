@@ -35,9 +35,9 @@ it has different levels of height and only in few parts the surface is flat. Mos
  
  ![image4]
 
-To gather the data, first, I have driven the car on both tracks, both clockwise and counter-clockwise. I also use the images
+To gather the data, first, I drove the car on both tracks, both clockwise and counter-clockwise. I also use the images
  from left and right cameras with a correction of 0.2 and -0.2 respectively. I tried to make more of the images at sharp turns,
-  thus have driven the car to certain difficult parts on second track and recorded starting from those points, while keeping the speed quite low.Then I add random horizontal and vertical translations
+  thus drove the car to certain difficult parts on second track and recorded starting from those points, while keeping the speed quite low.Then I add random horizontal and vertical translations
  to the images. Vertically, images are shifted by pixels between -20 and 20. Horizontally, they are shifted by pixels from
    interval of [-40, 40]. Since the steering angle should be corrected for the horizontal shifts I use the formula
    
