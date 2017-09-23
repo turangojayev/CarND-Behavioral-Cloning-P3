@@ -108,7 +108,10 @@ for the loss and setting it to 0.0001 has given me the best results.
 To track the value of loss function during training, I split the data into train (80%) and validation (20%) parts.
 To make sure that both train and validation data contain images with corresponding steering angle from the whole interval, 
 I use stratified sampling. For that, I group the steering angle values by putting them into separate bins, given by values
-[-1, -0.8, -0.6, -0.3, 0.3, 0.6, 0.8, 1]. After all these steps my model learned how to drive the car on both tracks at the
-speed of 30 mph.
+[-1, -0.8, -0.6, -0.3, 0.3, 0.6, 0.8, 1]. After all these steps my model learnt how to drive the car on both tracks at 
+speed of 30 miles per hour.
 
-[![](https://www.youtube.com/watch?v=d4q78V76Xlo/0.jpg)](https://www.youtube.com/watch?v=d4q78V76Xlo)
+
+[Link to autonomous driving on track1](https://www.youtube.com/watch?v=FyK2CDwMjvI)
+
+[Link to autonomous driving on track2](https://www.youtube.com/watch?v=d4q78V76Xlo)
