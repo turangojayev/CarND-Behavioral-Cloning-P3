@@ -78,8 +78,8 @@ Inspired by [NVIDIA's end to end approach](https://arxiv.org/pdf/1604.07316.pdf)
 First I normalize the images by subtracting 127 and dividing by 128, however, I neither cropped any part of the image, nor
 resized them. The difference from the NVIDIA's architecture is in the stride sizes (I have 1x1 strides), usage of max pooling
 after convolutional layers, number of filters at each convolutional layer, kernel sizes of the last two convolutional layers 
-(5x5 instead of 3x3) and in the number and sizes of the fully connected layers (2 instead of 3 layers, each of size 100).
- In total, my model had 371,373 parameters. The number of parameters are listed in the table below:
+(5x5 instead of 3x3) and in the number and sizes of the fully connected layers (2 instead of 3 layers, each of size 100). Moreover, 
+ I use a dropout layer with keeping probability of 0.8 to prevent the overfitting. In total, my model had 371,373 parameters. The number of parameters are listed in the table below:
 
 |Layer (type) |Output Shape|Param #|
 --------------|:-----------:|------ |
