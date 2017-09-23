@@ -5,6 +5,10 @@
 [image5]: ./examples/translated.png 
 [image6]: ./examples/shadowed.png
 [image7]: ./gifs/first.gif
+[image8]: ./gifs/second.gif
+[image9]: ./gifs/third.gif
+[image10]: ./gifs/fourth.gif
+[image11]: ./gifs/fifth.gif
  
 
 
@@ -113,9 +117,26 @@ I use stratified sampling. For that, I group the steering angle values by puttin
 [-1, -0.8, -0.6, -0.3, 0.3, 0.6, 0.8, 1]. After all these steps my model learnt how to drive the car on both tracks at 
 speed of 30 miles per hour.
 
+I tried to make average of the activations of convolutional layers for some sequences of the images, and here are the results:
+
+![image7]
+
+
+![image8]
+
+
+![image9]
+
+
+![image10]
+
+Output of the final convolutional layer and the angles:
+
+![image11]
+
+
+
 
 [Link to autonomous driving on track1](https://www.youtube.com/watch?v=FyK2CDwMjvI)
 
 [Link to autonomous driving on track2](https://www.youtube.com/watch?v=d4q78V76Xlo)
-
-![image7]
