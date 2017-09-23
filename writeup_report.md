@@ -111,4 +111,4 @@ I use stratified sampling. For that, I group the steering angle values by puttin
 [-1, -0.8, -0.6, -0.3, 0.3, 0.6, 0.8, 1]. After all these steps my model learned how to drive the car on both tracks at the
 speed of 30 mph.
 
-[![](https://www.youtube.com/embed/d4q78V76Xlo/0.jpg)](https://www.youtube.com/embed/d4q78V76Xlo)
+[![](https://www.youtube.com/watch?v=d4q78V76Xlo/0.jpg)](https://www.youtube.com/watch?v=d4q78V76Xlo)
