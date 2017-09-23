@@ -18,7 +18,7 @@ The goals / steps of this project are the following:
 * Summarize the results with a written report
 
 There are two tracks in simulator, which could be assessed as easy and more difficult. Easy track is mostly straight 
-with only only a few bends and is flat, while the other track (optional) is very curvy and also contains U-turns. Besides,
+with only a few bends and is flat, while the other track (optional) is very curvy and also contains U-turns. Besides,
 it has different levels of height and only in few parts the surface is flat. Most time consuming part of this project was making the car drive on  the second track.
  
  There are three cameras attached to the car: left, center and right and we get RGB images of size (160, 320). We gather data by driving the car in manual mode. 
