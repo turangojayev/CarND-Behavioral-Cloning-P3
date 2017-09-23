@@ -13,6 +13,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 
+uniform = numpy.random.uniform
+
 def combine_datasets(*csv_files):
     columns = ['center', 'left', 'right', 'steering', 'throttle', 'brake', 'speed']
     df = pandas.read_csv(csv_files[0][0], header=None, names=columns)
@@ -141,7 +143,7 @@ def build_model(shape):
 
 if __name__ == "__main__":
     batch_size = 32
-    uniform = numpy.random.uniform
+
 
     pattern = '{}/driving_log.csv'
     directories = ['track2', 'track3', 'track4', 'track5', 'data', 'track8']
