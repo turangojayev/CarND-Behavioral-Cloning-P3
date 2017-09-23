@@ -21,7 +21,7 @@ There are two tracks in simulator, which could be assessed as easy and more diff
 with only a few bends and is flat, while the other track (optional) is very curvy and also contains U-turns. Besides,
 it has different levels of height and only in few parts the surface is flat. Most time consuming part of this project was making the car drive on  the second track.
  
- There are three cameras attached to the car: left, center and right and we get RGB images of size (160, 320). We gather data by driving the car in manual mode. 
+ There are three cameras attached to the car: left, central and right and we get RGB images of size (160, 320). We gather data by driving the car in manual mode. 
  Data contains steering angle (from interval [-1, 1] ), brake, throttle and speed values for each frame made by central camera. To get an idea of 
  how the roads look like, we can see the images below, which also contain the steering angles:
  
