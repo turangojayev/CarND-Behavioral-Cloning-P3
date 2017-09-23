@@ -72,7 +72,7 @@ only the paths to the images and use python generators to read the images only w
 Random shifts-shadows are done on the fly. Thus, the actual number of distinct images is more than 206418 
 (translation and shadowing are done randomly every time the image is read).
 
-###Model Architecture and Training Strategy
+### Model Architecture and Training Strategy
 
 Inspired by [NVIDIA's end to end approach](https://arxiv.org/pdf/1604.07316.pdf) I used similar architecture to solve this problem.
 First I normalize the images by subtracting 127 and dividing by 128, however, I neither cropped any part of the image, nor
