@@ -3,7 +3,9 @@
 [image3]: ./examples/right.png 
 [image4]: ./examples/track2.png 
 [image5]: ./examples/translated.png 
-[image6]: ./examples/shadowed.png 
+[image6]: ./examples/shadowed.png
+[image7]: ./gifs/first.gif
+ 
 
 
 
@@ -115,3 +117,5 @@ speed of 30 miles per hour.
 [Link to autonomous driving on track1](https://www.youtube.com/watch?v=FyK2CDwMjvI)
 
 [Link to autonomous driving on track2](https://www.youtube.com/watch?v=d4q78V76Xlo)
+
+![image7]
