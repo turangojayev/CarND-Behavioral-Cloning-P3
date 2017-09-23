@@ -68,7 +68,7 @@ also sampled uniformly from interval [0.4. 0.6]. For example, shadow added to ra
 
 To increase the data further and to remove the bias towards certain side of the tracks, I also flip the images horizontally and of course, 
 multiply the corresponding steering angle by -1. After all these procedures I would have ended up with 206418 images. I keep 
-only the paths to the images and use python generators to read the images only when they are needed. 
+in memory only the paths to the images and use python generators to read the images only when they are needed. 
 Random shifts-shadows are done on the fly. Thus, the actual number of distinct images is more than 206418 
 (translation and shadowing are done randomly every time the image is read).
 
